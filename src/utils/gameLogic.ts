@@ -176,6 +176,7 @@ export const collectRent = (gameState: GameState): GameState => {
     (p) => p.ownerId === gameState.character.id
   );
   const totalRent = ownedProperties.reduce((sum, p) => sum + p.rent, 0);
+  advanceDay(gameState);
 
   if (totalRent === 0) {
     return gameState;
