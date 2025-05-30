@@ -176,15 +176,15 @@ export const collectRent = (gameState: GameState): GameState => {
     (p) => p.ownerId === gameState.character.id
   );
   const totalRent = ownedProperties.reduce((sum, p) => sum + p.rent, 0);
-  advanceDay(gameState);
+  const advancedGameState = advanceDay(gameState);
 
   if (totalRent === 0) {
-    return gameState;
+    return advancedGameState;
   }
 
   const updatedCharacter = {
-    ...gameState.character,
-    money: gameState.character.money + totalRent,
+    ...advancedGameState.character,
+    money: advancedGameState.character.money + totalRent,
   };
 
   const newEvent: GameEvent = {
@@ -192,13 +192,13 @@ export const collectRent = (gameState: GameState): GameState => {
     title: "Rent Collected",
     description: `You collected $${totalRent.toLocaleString()} in rent from your properties.`,
     effect: "+$" + totalRent.toLocaleString(),
-    day: gameState.day,
+    day: advancedGameState.day,
   };
 
   return {
-    ...gameState,
+    ...advancedGameState,
     character: updatedCharacter,
-    events: [newEvent, ...gameState.events].slice(0, 10),
+    events: [newEvent, ...advancedGameState.events].slice(0, 10),
   };
 };
 
