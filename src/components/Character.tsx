@@ -29,6 +29,11 @@ const Character = ({ character }: CharacterProps) => {
         </div>
         
         <div className="stat-item">
+          <span className="text-sm text-gray-500">Friends</span>
+          <span className="font-bold text-pink-600">{character.friends}</span>
+        </div>
+        
+        <div className="stat-item">
           <span className="text-sm text-gray-500">Happiness</span>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div className="bg-yellow-400 h-2 rounded-full" style={{ width: `${character.happiness}%` }}></div>
@@ -42,7 +47,7 @@ const Character = ({ character }: CharacterProps) => {
           </div>
         </div>
         
-        <div className="stat-item">
+        <div className="stat-item col-span-2">
           <span className="text-sm text-gray-500">Business Skill</span>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${character.skills.business}%` }}></div>

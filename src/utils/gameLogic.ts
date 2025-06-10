@@ -16,7 +16,33 @@ export const createCharacter = (name: string): Character => {
       creativity: 20,
     },
     generation: 1,
+    friends: 0,
   };
+};
+
+// Helper function to check for gaining a friend (50% chance)
+const tryGainFriend = (gameState: GameState): { updatedCharacter: Character; friendEvent?: GameEvent } => {
+  const gainedFriend = Math.random() < 0.5;
+  
+  if (gainedFriend) {
+    const updatedCharacter = {
+      ...gameState.character,
+      friends: gameState.character.friends + 1,
+      happiness: Math.min(100, gameState.character.happiness + 5),
+    };
+    
+    const friendEvent: GameEvent = {
+      id: uuidv4(),
+      title: "New Friend!",
+      description: "You made a new friend! Your social circle is growing.",
+      effect: "+1 Friend, +5 Happiness",
+      day: gameState.day,
+    };
+    
+    return { updatedCharacter, friendEvent };
+  }
+  
+  return { updatedCharacter: gameState.character };
 };
 
 // Initialize game properties
@@ -88,11 +114,16 @@ export const buyProperty = (
     p.id === propertyId ? { ...p, ownerId: gameState.character.id } : p
   );
 
-  const updatedCharacter = {
+  let updatedCharacter = {
     ...gameState.character,
     money: gameState.character.money - property.price,
     happiness: Math.min(100, gameState.character.happiness + 10),
   };
+
+  const { updatedCharacter: characterWithFriend, friendEvent } = tryGainFriend({
+    ...gameState,
+    character: updatedCharacter,
+  });
 
   const newEvent: GameEvent = {
     id: uuidv4(),
@@ -104,11 +135,15 @@ export const buyProperty = (
     day: gameState.day,
   };
 
+  const events = friendEvent 
+    ? [friendEvent, newEvent, ...gameState.events].slice(0, 10)
+    : [newEvent, ...gameState.events].slice(0, 10);
+
   return {
     ...gameState,
-    character: updatedCharacter,
+    character: characterWithFriend,
     properties: updatedProperties,
-    events: [newEvent, ...gameState.events].slice(0, 10),
+    events,
   };
 };
 
@@ -143,7 +178,7 @@ export const upgradeProperty = (
       : p
   );
 
-  const updatedCharacter = {
+  let updatedCharacter = {
     ...gameState.character,
     money: gameState.character.money - upgradeCost,
     skills: {
@@ -151,6 +186,11 @@ export const upgradeProperty = (
       business: Math.min(100, gameState.character.skills.business + 5),
     },
   };
+
+  const { updatedCharacter: characterWithFriend, friendEvent } = tryGainFriend({
+    ...gameState,
+    character: updatedCharacter,
+  });
 
   const newEvent: GameEvent = {
     id: uuidv4(),
@@ -162,11 +202,15 @@ export const upgradeProperty = (
     day: gameState.day,
   };
 
+  const events = friendEvent 
+    ? [friendEvent, newEvent, ...gameState.events].slice(0, 10)
+    : [newEvent, ...gameState.events].slice(0, 10);
+
   return {
     ...gameState,
-    character: updatedCharacter,
+    character: characterWithFriend,
     properties: updatedProperties,
-    events: [newEvent, ...gameState.events].slice(0, 10),
+    events,
   };
 };
 
@@ -182,10 +226,15 @@ export const collectRent = (gameState: GameState): GameState => {
     return advancedGameState;
   }
 
-  const updatedCharacter = {
+  let updatedCharacter = {
     ...advancedGameState.character,
     money: advancedGameState.character.money + totalRent,
   };
+
+  const { updatedCharacter: characterWithFriend, friendEvent } = tryGainFriend({
+    ...advancedGameState,
+    character: updatedCharacter,
+  });
 
   const newEvent: GameEvent = {
     id: uuidv4(),
@@ -195,10 +244,14 @@ export const collectRent = (gameState: GameState): GameState => {
     day: advancedGameState.day,
   };
 
+  const events = friendEvent 
+    ? [friendEvent, newEvent, ...advancedGameState.events].slice(0, 10)
+    : [newEvent, ...advancedGameState.events].slice(0, 10);
+
   return {
     ...advancedGameState,
-    character: updatedCharacter,
-    events: [newEvent, ...advancedGameState.events].slice(0, 10),
+    character: characterWithFriend,
+    events,
   };
 };
 
@@ -235,7 +288,7 @@ export const work = (gameState: GameState): GameState => {
   const skillBonus = gameState.character.skills.business * 10;
   const totalEarnings = baseEarnings + skillBonus;
 
-  const updatedCharacter = {
+  let updatedCharacter = {
     ...gameState.character,
     money: gameState.character.money + totalEarnings,
     energy: Math.max(0, gameState.character.energy - 20),
@@ -245,6 +298,11 @@ export const work = (gameState: GameState): GameState => {
     },
   };
 
+  const { updatedCharacter: characterWithFriend, friendEvent } = tryGainFriend({
+    ...gameState,
+    character: updatedCharacter,
+  });
+
   const newEvent: GameEvent = {
     id: uuidv4(),
     title: "Work Completed",
@@ -253,11 +311,15 @@ export const work = (gameState: GameState): GameState => {
     day: gameState.day,
   };
 
+  const events = friendEvent 
+    ? [friendEvent, newEvent, ...gameState.events].slice(0, 10)
+    : [newEvent, ...gameState.events].slice(0, 10);
+
   // Advance the day after working
   const gameStateWithWork = {
     ...gameState,
-    character: updatedCharacter,
-    events: [newEvent, ...gameState.events].slice(0, 10),
+    character: characterWithFriend,
+    events,
   };
 
   return advanceDay(gameStateWithWork);
@@ -413,6 +475,7 @@ const handleEndOfLife = (gameState: GameState): GameState => {
       creativity: gameState.character.skills.creativity,
     },
     generation: gameState.character.generation + 1,
+    friends: Math.floor(gameState.character.friends * 0.3), // Inherit 30% of friends
   };
 
   // Transfer property ownership to heir

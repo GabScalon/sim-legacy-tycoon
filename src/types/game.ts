@@ -1,4 +1,3 @@
-
 export interface Character {
   id: string;
   name: string;
@@ -12,6 +11,7 @@ export interface Character {
     creativity: number;
   };
   generation: number;
+  friends: number;
 }
 
 export interface Property {
