@@ -1,7 +1,6 @@
 export interface Character {
   id: string;
   name: string;
-  age: number;
   money: number;
   happiness: number;
   energy: number;
@@ -10,7 +9,6 @@ export interface Character {
     social: number;
     creativity: number;
   };
-  generation: number;
   friends: number;
 }
 
