@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from "react";
 import { Character as CharacterType } from "../types/game";
 
 interface CharacterProps {
@@ -7,55 +6,8 @@ interface CharacterProps {
   onCharacterCreated: (name: string) => void;
 }
 
-const Character = ({ character, onCharacterCreated }: CharacterProps) => {
-  const [name, setName] = useState("");
-  const [isCreating, setIsCreating] = useState(true);
-
-  useEffect(() => {
-    if (character?.name) {
-      setIsCreating(false);
-    }
-  }, [character]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim()) {
-      onCharacterCreated(name);
-      setIsCreating(false);
-    }
-  };
-
-  if (isCreating) {
-    return (
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto my-8">
-        <h2 className="text-2xl font-bold mb-4 text-center text-blue-800">Create Your Character</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Character Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter a name..."
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200"
-          >
-            Start Your Legacy
-          </button>
-        </form>
-      </div>
-    );
-  }
-
-  // Display character stats
+const Character = ({ character }: CharacterProps) => {
+  // Display character stats directly
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-4">
       <div className="flex items-center mb-3">

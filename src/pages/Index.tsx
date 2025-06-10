@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import Character from "@/components/Character";
 import GameBoard from "@/components/GameBoard";
@@ -19,14 +19,15 @@ const Index = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const { toast } = useToast();
 
-  const handleCharacterCreated = (name: string) => {
-    const newGameState = initializeGame(name);
+  // Initialize game with Simeon automatically
+  useEffect(() => {
+    const newGameState = initializeGame("Simeon");
     setGameState(newGameState);
     toast({
       title: "Game Started",
-      description: `Welcome to Simopoly, ${name}! Build your property empire and create your legacy.`,
+      description: "Welcome to Simopoly, Simeon! Build your property empire and create your legacy.",
     });
-  };
+  }, [toast]);
 
   const handleBuyProperty = (propertyId: string) => {
     if (!gameState) return;
@@ -154,15 +155,11 @@ const Index = () => {
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-        <div className="max-w-4xl mx-auto text-center mb-8">
-          <h1 className="text-4xl font-bold text-blue-800 mb-2">Simopoly</h1>
-          <p className="text-lg text-gray-600">Build your property empire and create a lasting legacy</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-blue-800 mb-2">Loading Simopoly...</h1>
+          <p className="text-lg text-gray-600">Preparing your property empire</p>
         </div>
-        <Character 
-          character={null as any} 
-          onCharacterCreated={handleCharacterCreated} 
-        />
       </div>
     );
   }
@@ -174,9 +171,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 relative">
           <h1 className="text-3xl font-bold text-blue-800 mb-1">Simopoly</h1>
           <p className="text-gray-600">Build your property empire • Generation {gameState.character.generation}</p>
+          
+          {/* Simeon's image in the top right corner */}
+          <div className="absolute top-0 right-0">
+            <img 
+              src="/lovable-uploads/3573e43c-7e90-4b43-8ccf-f535f3def654.png" 
+              alt="Simeon" 
+              className="w-16 h-16 rounded-full border-2 border-blue-800 shadow-lg object-cover"
+            />
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -184,7 +190,7 @@ const Index = () => {
           <div className="lg:col-span-1 space-y-4">
             <Character 
               character={gameState.character} 
-              onCharacterCreated={handleCharacterCreated} 
+              onCharacterCreated={() => {}} 
             />
             <ActionPanel 
               onCollectRent={handleCollectRent}
