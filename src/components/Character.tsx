@@ -20,7 +20,6 @@ const Character = ({ character }: CharacterProps) => {
         />
         <div>
           <h3 className="font-bold text-lg">{character.name}</h3>
-          <p className="text-sm text-gray-600">Generation {character.generation} • Age {character.age}</p>
         </div>
       </div>
 
