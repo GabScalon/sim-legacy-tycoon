@@ -225,6 +225,44 @@ export const rest = (gameState: GameState): GameState => {
   };
 };
 
+// Work to earn money
+export const work = (gameState: GameState): GameState => {
+  if (gameState.character.energy < 20) {
+    return gameState;
+  }
+
+  const baseEarnings = 500;
+  const skillBonus = gameState.character.skills.business * 10;
+  const totalEarnings = baseEarnings + skillBonus;
+
+  const updatedCharacter = {
+    ...gameState.character,
+    money: gameState.character.money + totalEarnings,
+    energy: Math.max(0, gameState.character.energy - 20),
+    skills: {
+      ...gameState.character.skills,
+      business: Math.min(100, gameState.character.skills.business + 2),
+    },
+  };
+
+  const newEvent: GameEvent = {
+    id: uuidv4(),
+    title: "Work Completed",
+    description: `You worked hard and earned $${totalEarnings.toLocaleString()}. Your business skills improved!`,
+    effect: "+$" + totalEarnings.toLocaleString(),
+    day: gameState.day,
+  };
+
+  // Advance the day after working
+  const gameStateWithWork = {
+    ...gameState,
+    character: updatedCharacter,
+    events: [newEvent, ...gameState.events].slice(0, 10),
+  };
+
+  return advanceDay(gameStateWithWork);
+};
+
 // Advance a day in the game
 export const advanceDay = (gameState: GameState): GameState => {
   const dailyExpenses =

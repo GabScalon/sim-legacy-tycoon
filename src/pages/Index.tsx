@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import Character from "@/components/Character";
@@ -11,6 +10,7 @@ import {
   upgradeProperty, 
   collectRent, 
   rest, 
+  work,
   advanceDay 
 } from "@/utils/gameLogic";
 import { GameState } from "@/types/game";
@@ -132,6 +132,31 @@ const Index = () => {
     });
   };
 
+  const handleWork = () => {
+    if (!gameState) return;
+    
+    if (gameState.character.energy < 20) {
+      toast({
+        title: "Too Tired to Work",
+        description: "You need at least 20 energy to work. Try resting first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const baseEarnings = 500;
+    const skillBonus = gameState.character.skills.business * 10;
+    const totalEarnings = baseEarnings + skillBonus;
+    
+    const updatedGameState = work(gameState);
+    setGameState(updatedGameState);
+    
+    toast({
+      title: "Work Completed",
+      description: `You earned $${totalEarnings.toLocaleString()} and improved your business skills!`,
+    });
+  };
+
   const handleAdvanceDay = () => {
     if (!gameState) return;
     
@@ -196,8 +221,10 @@ const Index = () => {
               onCollectRent={handleCollectRent}
               onRest={handleRest}
               onAdvanceDay={handleAdvanceDay}
+              onWork={handleWork}
               energy={gameState.character.energy}
               ownedPropertiesCount={ownedPropertiesCount}
+              businessSkill={gameState.character.skills.business}
             />
           </div>
           
