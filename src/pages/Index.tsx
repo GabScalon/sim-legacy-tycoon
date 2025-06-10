@@ -196,18 +196,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-6 relative">
+        <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-blue-800 mb-1">Simopoly</h1>
           <p className="text-gray-600">Build your property empire • Generation {gameState.character.generation}</p>
-          
-          {/* Simeon's image in the top right corner */}
-          <div className="absolute top-0 right-0">
-            <img 
-              src="/lovable-uploads/3573e43c-7e90-4b43-8ccf-f535f3def654.png" 
-              alt="Simeon" 
-              className="w-16 h-16 rounded-full border-2 border-blue-800 shadow-lg object-cover"
-            />
-          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">

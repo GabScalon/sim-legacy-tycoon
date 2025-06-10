@@ -11,9 +11,11 @@ const Character = ({ character }: CharacterProps) => {
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-4">
       <div className="flex items-center mb-3">
-        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold mr-3">
-          {character.name.charAt(0)}
-        </div>
+        <img 
+          src="/lovable-uploads/3573e43c-7e90-4b43-8ccf-f535f3def654.png" 
+          alt="Simeon" 
+          className="w-12 h-12 rounded-full border-2 border-blue-600 shadow-lg object-cover mr-3"
+        />
         <div>
           <h3 className="font-bold text-lg">{character.name}</h3>
           <p className="text-sm text-gray-600">Generation {character.generation} • Age {character.age}</p>
