@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import Character from "@/components/Character";
 import GameBoard from "@/components/GameBoard";
 import StatsPanel from "@/components/StatsPanel";
@@ -19,13 +20,13 @@ const Index = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const { toast } = useToast();
 
-  // Initialize game with Simeon automatically
+  // Initialize game with Simeon Yetarian automatically
   useEffect(() => {
-    const newGameState = initializeGame("Simeon");
+    const newGameState = initializeGame("Simeon Yetarian");
     setGameState(newGameState);
     toast({
       title: "Game Started",
-      description: "Welcome to Simopoly, Simeon! Build your property empire and create your legacy.",
+      description: "Welcome to Simopoly, Simeon Yetarian! Build your property empire and create your legacy.",
     });
   }, [toast]);
 
@@ -47,8 +48,17 @@ const Index = () => {
     const updatedGameState = buyProperty(gameState, propertyId);
     setGameState(updatedGameState);
     
+    // Check if a friend was gained
+    const friendEvent = updatedGameState.events.find(e => e.title.includes("Friend"));
+    if (friendEvent && friendEvent.day === updatedGameState.day) {
+      toast({
+        title: friendEvent.title,
+        description: friendEvent.description,
+      });
+    }
+    
     toast({
-      title: "Property Purchased",
+      title: "You bought a property!",
       description: `You have successfully purchased ${property.name}.`,
     });
   };
@@ -150,6 +160,15 @@ const Index = () => {
     
     const updatedGameState = work(gameState);
     setGameState(updatedGameState);
+    
+    // Check if a friend was gained
+    const friendEvent = updatedGameState.events.find(e => e.title.includes("Friend"));
+    if (friendEvent && friendEvent.day === updatedGameState.day) {
+      toast({
+        title: friendEvent.title,
+        description: friendEvent.description,
+      });
+    }
     
     toast({
       title: "Work Completed",

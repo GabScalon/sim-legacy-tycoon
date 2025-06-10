@@ -1,5 +1,21 @@
+
 import { Character, Property, GameState, GameEvent } from "../types/game";
 import { v4 as uuidv4 } from "uuid";
+
+// Calculate friend level based on geometric progression: a1 = 10, ratio = 2
+export const calculateFriendLevel = (friends: number): number => {
+  if (friends < 10) return 1;
+  
+  let level = 1;
+  let threshold = 10;
+  
+  while (friends >= threshold) {
+    level++;
+    threshold *= 2;
+  }
+  
+  return level;
+};
 
 // Initialize a new character
 export const createCharacter = (name: string): Character => {
@@ -20,22 +36,35 @@ export const createCharacter = (name: string): Character => {
   };
 };
 
-// Helper function to check for gaining a friend (50% chance)
+// Helper function to check for gaining a friend (65% chance)
 const tryGainFriend = (gameState: GameState): { updatedCharacter: Character; friendEvent?: GameEvent } => {
-  const gainedFriend = Math.random() < 0.5;
+  const gainedFriend = Math.random() < 0.65;
   
   if (gainedFriend) {
+    const newFriendCount = gameState.character.friends + 1;
+    const oldLevel = calculateFriendLevel(gameState.character.friends);
+    const newLevel = calculateFriendLevel(newFriendCount);
+    
+    let happinessBonus = 15; // Base happiness for gaining a friend
+    if (newLevel > oldLevel) {
+      happinessBonus += 20; // Extra happiness for leveling up
+    }
+    
     const updatedCharacter = {
       ...gameState.character,
-      friends: gameState.character.friends + 1,
-      happiness: Math.min(100, gameState.character.happiness + 5),
+      friends: newFriendCount,
+      happiness: Math.min(100, gameState.character.happiness + happinessBonus),
     };
     
     const friendEvent: GameEvent = {
       id: uuidv4(),
-      title: "New Friend!",
-      description: "You made a new friend! Your social circle is growing.",
-      effect: "+1 Friend, +5 Happiness",
+      title: newLevel > oldLevel ? `Level Up! Friend Level ${newLevel}` : "New Friend!",
+      description: newLevel > oldLevel 
+        ? `You made a new friend and reached friend level ${newLevel}! Your social circle is growing strong.`
+        : "You made a new friend! Your social circle is growing.",
+      effect: newLevel > oldLevel 
+        ? `+1 Friend, Friend Level ${newLevel}, +${happinessBonus} Happiness`
+        : `+1 Friend, +${happinessBonus} Happiness`,
       day: gameState.day,
     };
     
@@ -114,10 +143,15 @@ export const buyProperty = (
     p.id === propertyId ? { ...p, ownerId: gameState.character.id } : p
   );
 
+  let baseHappiness = 15; // Base happiness for buying property
+  if (gameState.character.energy < 30) {
+    baseHappiness = 5; // Reduced happiness if tired
+  }
+
   let updatedCharacter = {
     ...gameState.character,
     money: gameState.character.money - property.price,
-    happiness: Math.min(100, gameState.character.happiness + 10),
+    happiness: Math.min(100, gameState.character.happiness + baseHappiness),
   };
 
   const { updatedCharacter: characterWithFriend, friendEvent } = tryGainFriend({
@@ -127,7 +161,7 @@ export const buyProperty = (
 
   const newEvent: GameEvent = {
     id: uuidv4(),
-    title: "Property Purchased",
+    title: "Property Purchased!",
     description: `You purchased ${
       property.name
     } for $${property.price.toLocaleString()}.`,
@@ -288,10 +322,16 @@ export const work = (gameState: GameState): GameState => {
   const skillBonus = gameState.character.skills.business * 10;
   const totalEarnings = baseEarnings + skillBonus;
 
+  let happinessChange = 10; // Base happiness for working
+  if (gameState.character.energy < 40) {
+    happinessChange = -5; // Negative happiness if very tired
+  }
+
   let updatedCharacter = {
     ...gameState.character,
     money: gameState.character.money + totalEarnings,
     energy: Math.max(0, gameState.character.energy - 20),
+    happiness: Math.max(0, Math.min(100, gameState.character.happiness + happinessChange)),
     skills: {
       ...gameState.character.skills,
       business: Math.min(100, gameState.character.skills.business + 2),
@@ -327,17 +367,28 @@ export const work = (gameState: GameState): GameState => {
 
 // Advance a day in the game
 export const advanceDay = (gameState: GameState): GameState => {
-  const dailyExpenses =
-    100 +
-    gameState.properties.filter((p) => p.ownerId === gameState.character.id)
-      .length *
-      50;
+  const ownedPropertiesCount = gameState.properties.filter((p) => p.ownerId === gameState.character.id).length;
+  const dailyExpenses = 100 + ownedPropertiesCount * 50;
+
+  // Check if expenses are high and affect happiness
+  let happinessChange = -5; // Base daily happiness loss
+  if (dailyExpenses > 500) {
+    happinessChange = -15; // Extra happiness loss for high expenses
+  }
+
+  // Check if character hasn't made friends recently (low social interaction)
+  const recentFriendEvents = gameState.events.filter(
+    event => event.title.includes("Friend") && (gameState.day - event.day) <= 5
+  );
+  if (recentFriendEvents.length === 0 && gameState.day > 5) {
+    happinessChange -= 10; // Additional happiness loss for social isolation
+  }
 
   let updatedCharacter = {
     ...gameState.character,
     money: gameState.character.money - dailyExpenses,
     energy: Math.max(10, gameState.character.energy - 15),
-    happiness: Math.max(10, gameState.character.happiness - 5),
+    happiness: Math.max(10, gameState.character.happiness + happinessChange),
   };
 
   // Every 30 days, character ages one year

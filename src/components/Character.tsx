@@ -1,5 +1,6 @@
 
 import { Character as CharacterType } from "../types/game";
+import { calculateFriendLevel } from "../utils/gameLogic";
 
 interface CharacterProps {
   character: CharacterType;
@@ -7,13 +8,14 @@ interface CharacterProps {
 }
 
 const Character = ({ character }: CharacterProps) => {
-  // Display character stats directly
+  const friendLevel = calculateFriendLevel(character.friends);
+  
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-4">
       <div className="flex items-center mb-3">
         <img 
           src="/lovable-uploads/3573e43c-7e90-4b43-8ccf-f535f3def654.png" 
-          alt="Simeon" 
+          alt="Simeon Yetarian" 
           className="w-12 h-12 rounded-full border-2 border-blue-600 shadow-lg object-cover mr-3"
         />
         <div>
@@ -29,7 +31,7 @@ const Character = ({ character }: CharacterProps) => {
         </div>
         
         <div className="stat-item">
-          <span className="text-sm text-gray-500">Friends</span>
+          <span className="text-sm text-gray-500">Friends (Level {friendLevel})</span>
           <span className="font-bold text-pink-600">{character.friends}</span>
         </div>
         
