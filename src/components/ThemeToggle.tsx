@@ -4,11 +4,16 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 
 const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true); // Modo escuro como padrão
 
   useEffect(() => {
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    // Verificar se há preferência salva, senão usar modo escuro como padrão
+    const savedTheme = localStorage.getItem('darkMode');
+    const isDarkMode = savedTheme ? savedTheme === 'true' : true; // Padrão escuro
+    
     setIsDark(isDarkMode);
+    localStorage.setItem('darkMode', isDarkMode.toString());
+    
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
