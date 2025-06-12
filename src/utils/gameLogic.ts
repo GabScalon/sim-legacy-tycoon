@@ -309,6 +309,11 @@ export const upgradeProperty = (
 
 // Collect rent
 export const collectRent = (gameState: GameState): GameState => {
+  // Check if character has enough energy
+  if (gameState.character.energy < 15) {
+    return gameState;
+  }
+
   const ownedProperties = gameState.properties.filter(
     (p) => p.ownerId === gameState.character.id
   );
@@ -322,6 +327,7 @@ export const collectRent = (gameState: GameState): GameState => {
   let updatedCharacter = {
     ...advancedGameState.character,
     money: advancedGameState.character.money + totalRent,
+    energy: Math.max(0, advancedGameState.character.energy - 15), // Consume 15 energy
   };
 
   const { updatedCharacter: characterWithFriend, friendEvent } = tryGainFriend({

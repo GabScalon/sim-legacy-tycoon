@@ -100,6 +100,15 @@ const Index = () => {
   const handleCollectRent = () => {
     if (!gameState) return;
     
+    if (gameState.character.energy < 15) {
+      toast({
+        title: "Too Tired to Collect Rent",
+        description: "You need at least 15 energy to collect rent. Try resting first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const ownedProperties = gameState.properties.filter(p => p.ownerId === gameState.character.id);
     if (ownedProperties.length === 0) {
       toast({
@@ -206,8 +215,8 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-blue-800 mb-1">Simopoly</h1>
-          <p className="text-gray-600">Build your property empire</p>
+          <h1 className="text-3xl font-bold text-blue-800 mb-1">Simeon City</h1>
+          <p className="text-gray-600">A cidade onde você pode ser si próprio.</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
