@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Character from "@/components/Character";
@@ -180,15 +179,6 @@ const Index = () => {
     if (!gameState) return;
     
     const updatedGameState = advanceDay(gameState);
-    
-    // Check if generation changed
-    if (updatedGameState.character.id !== gameState.character.id) {
-      toast({
-        title: "New Generation",
-        description: `${gameState.character.name} has passed away. Their heir continues the legacy.`,
-      });
-    }
-    
     setGameState(updatedGameState);
     
     toast({
@@ -217,7 +207,7 @@ const Index = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-blue-800 mb-1">Simopoly</h1>
-          <p className="text-gray-600">Build your property empire • Generation {gameState.character.generation}</p>
+          <p className="text-gray-600">Build your property empire</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">

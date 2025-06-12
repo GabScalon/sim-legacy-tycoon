@@ -22,7 +22,6 @@ export const createCharacter = (name: string): Character => {
   return {
     id: uuidv4(),
     name,
-    age: 25,
     money: 100000,
     happiness: 80,
     energy: 100,
@@ -31,7 +30,6 @@ export const createCharacter = (name: string): Character => {
       social: 20,
       creativity: 20,
     },
-    generation: 1,
     friends: 0,
   };
 };
@@ -74,36 +72,95 @@ const tryGainFriend = (gameState: GameState): { updatedCharacter: Character; fri
   return { updatedCharacter: gameState.character };
 };
 
+// Generate new properties with higher values
+const generateNewProperties = (currentPropertyCount: number): Property[] => {
+  const baseMultiplier = Math.floor(currentPropertyCount / 9) + 1;
+  const propertyTypes: ("residential" | "commercial")[] = [
+    "residential", "residential", "commercial", "residential", "commercial",
+    "residential", "commercial", "residential", "residential"
+  ];
+
+  const propertyNames = {
+    residential: [
+      "Luxury Villa", "Penthouse Suite", "Mansion Estate", "Palace Residence",
+      "Royal Apartment", "Executive Home", "Premium Condo", "Elite Residence",
+      "Exclusive Manor"
+    ],
+    commercial: [
+      "Corporate Tower", "Business Complex", "Shopping Center", "Office Plaza",
+      "Commercial District", "Trade Center", "Financial Hub", "Business Park",
+      "Corporate Campus"
+    ]
+  };
+
+  return Array.from({ length: 9 }, (_, i) => {
+    const type = propertyTypes[i];
+    const nameIndex = (currentPropertyCount + i) % propertyNames[type].length;
+    
+    return {
+      id: uuidv4(),
+      name: `${propertyNames[type][nameIndex]} Tier ${baseMultiplier}`,
+      price: type === "residential"
+        ? Math.floor((75000 + Math.random() * 150000) * baseMultiplier * 2)
+        : Math.floor((120000 + Math.random() * 250000) * baseMultiplier * 2),
+      rent: type === "residential"
+        ? Math.floor((1000 + Math.random() * 3000) * baseMultiplier * 2)
+        : Math.floor((3000 + Math.random() * 8000) * baseMultiplier * 2),
+      level: 1,
+      type,
+      ownerId: null,
+      position: {
+        x: (i % 3) * 33.33,
+        y: Math.floor(i / 3) * 33.33,
+      },
+    };
+  });
+};
+
+// Check if all properties are owned and fully upgraded
+const checkForPropertyExpansion = (gameState: GameState): GameState => {
+  const allOwned = gameState.properties.every(p => p.ownerId === gameState.character.id);
+  const allMaxLevel = gameState.properties.every(p => p.level >= 3);
+  
+  if (allOwned && allMaxLevel) {
+    const newProperties = generateNewProperties(gameState.properties.length);
+    
+    const expansionEvent: GameEvent = {
+      id: uuidv4(),
+      title: "Property Market Expansion!",
+      description: "You've dominated the current market! New premium properties are now available for purchase.",
+      effect: "New Properties Available",
+      day: gameState.day,
+    };
+    
+    return {
+      ...gameState,
+      properties: [...gameState.properties, ...newProperties],
+      events: [expansionEvent, ...gameState.events].slice(0, 10),
+    };
+  }
+  
+  return gameState;
+};
+
 // Initialize game properties
 export const initializeProperties = (): Property[] => {
   const propertyTypes: ("residential" | "commercial")[] = [
-    "residential",
-    "residential",
-    "commercial",
-    "residential",
-    "commercial",
-    "residential",
-    "commercial",
-    "residential",
-    "residential",
+    "residential", "residential", "commercial", "residential", "commercial",
+    "residential", "commercial", "residential", "residential"
   ];
 
   return Array.from({ length: 9 }, (_, i) => ({
     id: uuidv4(),
-    name:
-      propertyTypes[i] === "residential"
-        ? `${["Sunny", "Green", "Blue", "Modern", "Cozy"][i % 5]} House`
-        : `${
-            ["Central", "Uptown", "Downtown", "Retail", "Office"][i % 5]
-          } Business`,
-    price:
-      propertyTypes[i] === "residential"
-        ? Math.floor(75000 + Math.random() * 150000)
-        : Math.floor(120000 + Math.random() * 250000),
-    rent:
-      propertyTypes[i] === "residential"
-        ? Math.floor(1000 + Math.random() * 3000)
-        : Math.floor(3000 + Math.random() * 8000),
+    name: propertyTypes[i] === "residential"
+      ? `${["Sunny", "Green", "Blue", "Modern", "Cozy"][i % 5]} House`
+      : `${["Central", "Uptown", "Downtown", "Retail", "Office"][i % 5]} Business`,
+    price: propertyTypes[i] === "residential"
+      ? Math.floor(75000 + Math.random() * 150000)
+      : Math.floor(120000 + Math.random() * 250000),
+    rent: propertyTypes[i] === "residential"
+      ? Math.floor(1000 + Math.random() * 3000)
+      : Math.floor(3000 + Math.random() * 8000),
     level: 1,
     type: propertyTypes[i],
     ownerId: null,
@@ -162,9 +219,7 @@ export const buyProperty = (
   const newEvent: GameEvent = {
     id: uuidv4(),
     title: "Property Purchased!",
-    description: `You purchased ${
-      property.name
-    } for $${property.price.toLocaleString()}.`,
+    description: `You purchased ${property.name} for $${property.price.toLocaleString()}.`,
     effect: "-$" + property.price.toLocaleString(),
     day: gameState.day,
   };
@@ -173,12 +228,15 @@ export const buyProperty = (
     ? [friendEvent, newEvent, ...gameState.events].slice(0, 10)
     : [newEvent, ...gameState.events].slice(0, 10);
 
-  return {
+  const gameStateWithPurchase = {
     ...gameState,
     character: characterWithFriend,
     properties: updatedProperties,
     events,
   };
+
+  // Check for property expansion after purchase
+  return checkForPropertyExpansion(gameStateWithPurchase);
 };
 
 // Upgrade a property
@@ -229,9 +287,7 @@ export const upgradeProperty = (
   const newEvent: GameEvent = {
     id: uuidv4(),
     title: "Property Upgraded",
-    description: `You upgraded ${property.name} to level ${
-      property.level + 1
-    }.`,
+    description: `You upgraded ${property.name} to level ${property.level + 1}.`,
     effect: "-$" + upgradeCost.toLocaleString(),
     day: gameState.day,
   };
@@ -240,12 +296,15 @@ export const upgradeProperty = (
     ? [friendEvent, newEvent, ...gameState.events].slice(0, 10)
     : [newEvent, ...gameState.events].slice(0, 10);
 
-  return {
+  const gameStateWithUpgrade = {
     ...gameState,
     character: characterWithFriend,
     properties: updatedProperties,
     events,
   };
+
+  // Check for property expansion after upgrade
+  return checkForPropertyExpansion(gameStateWithUpgrade);
 };
 
 // Collect rent
@@ -391,14 +450,6 @@ export const advanceDay = (gameState: GameState): GameState => {
     happiness: Math.max(10, gameState.character.happiness + happinessChange),
   };
 
-  // Every 30 days, character ages one year
-  if (gameState.day % 30 === 0) {
-    updatedCharacter = {
-      ...updatedCharacter,
-      age: updatedCharacter.age + 1,
-    };
-  }
-
   const newEvent: GameEvent = {
     id: uuidv4(),
     title: "Daily Expenses",
@@ -414,8 +465,7 @@ export const advanceDay = (gameState: GameState): GameState => {
     const events = [
       {
         title: "Market Boom",
-        description:
-          "The real estate market is booming! Property values increase.",
+        description: "The real estate market is booming! Property values increase.",
         effect: "+10% Property Value",
       },
       {
@@ -489,66 +539,10 @@ export const advanceDay = (gameState: GameState): GameState => {
     }
   }
 
-  // Check for game over or inheritance
-  if (updatedCharacter.money < 0 || updatedCharacter.age >= 80) {
-    // Game over or next generation
-    return handleEndOfLife(gameState);
-  }
-
   return {
     ...gameState,
     day: gameState.day + 1,
     character: updatedCharacter,
     events: updatedEvents,
-  };
-};
-
-// Handle end of life transition
-const handleEndOfLife = (gameState: GameState): GameState => {
-  const ownedProperties = gameState.properties.filter(
-    (p) => p.ownerId === gameState.character.id
-  );
-  const totalWealth =
-    gameState.character.money +
-    ownedProperties.reduce((sum, p) => sum + p.price, 0);
-
-  // Create a heir (next generation character)
-  const heir: Character = {
-    id: uuidv4(),
-    name: `Heir of ${gameState.character.name}`,
-    age: 25,
-    money: gameState.character.money > 0 ? gameState.character.money : 10000, // Inheritance or fresh start
-    happiness: 70,
-    energy: 100,
-    skills: {
-      business: Math.min(100, gameState.character.skills.business + 10),
-      social: gameState.character.skills.social,
-      creativity: gameState.character.skills.creativity,
-    },
-    generation: gameState.character.generation + 1,
-    friends: Math.floor(gameState.character.friends * 0.3), // Inherit 30% of friends
-  };
-
-  // Transfer property ownership to heir
-  const updatedProperties = gameState.properties.map((p) =>
-    p.ownerId === gameState.character.id ? { ...p, ownerId: heir.id } : p
-  );
-
-  const newEvent: GameEvent = {
-    id: uuidv4(),
-    title: "New Generation",
-    description: `${
-      gameState.character.name
-    } has passed away. Their heir takes over with a net worth of $${totalWealth.toLocaleString()}.`,
-    effect: "Next Generation",
-    day: gameState.day + 1,
-  };
-
-  return {
-    ...gameState,
-    day: gameState.day + 1,
-    character: heir,
-    properties: updatedProperties,
-    events: [newEvent, ...gameState.events].slice(0, 10),
   };
 };
