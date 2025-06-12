@@ -18,8 +18,8 @@ const GameBoard = ({
   onUpgradeProperty 
 }: GameBoardProps) => {
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h2 className="text-xl font-bold mb-4">Property Market</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <h2 className="text-xl font-bold mb-4 dark:text-white">Mercado Imobiliário</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {properties.map((property) => (
           <Property
