@@ -1,4 +1,3 @@
-
 import { GameState, Character, Property, GameEvent } from "../types/game";
 import { v4 as uuidv4 } from "uuid";
 
@@ -6,7 +5,7 @@ export const initializeGame = (characterName: string): GameState => {
   const character: Character = {
     id: uuidv4(),
     name: characterName,
-    money: 5000,
+    money: 100000,
     happiness: 100,
     energy: 100,
     skills: {
@@ -47,6 +46,66 @@ export const initializeGame = (characterName: string): GameState => {
       type: "residential",
       ownerId: null,
       position: { x: 2, y: 0 },
+    },
+    {
+      id: "4",
+      name: "Escritório Comercial",
+      price: 125000,
+      rent: 12500,
+      level: 1,
+      type: "commercial",
+      ownerId: null,
+      position: { x: 0, y: 1 },
+    },
+    {
+      id: "5",
+      name: "Condomínio Residencial",
+      price: 150000,
+      rent: 15000,
+      level: 1,
+      type: "residential",
+      ownerId: null,
+      position: { x: 1, y: 1 },
+    },
+    {
+      id: "6",
+      name: "Centro Comercial",
+      price: 175000,
+      rent: 17500,
+      level: 1,
+      type: "commercial",
+      ownerId: null,
+      position: { x: 2, y: 1 },
+    },
+    {
+      id: "7",
+      name: "Prédio Residencial",
+      price: 200000,
+      rent: 20000,
+      level: 1,
+      type: "residential",
+      ownerId: null,
+      position: { x: 0, y: 2 },
+    },
+    {
+      id: "8",
+      name: "Complexo Empresarial",
+      price: 225000,
+      rent: 22500,
+      level: 1,
+      type: "commercial",
+      ownerId: null,
+      position: { x: 1, y: 2 },
+    },
+    {
+      id: "9",
+      name: "Mansão Luxuosa",
+      price: 250000,
+      rent: 25000,
+      level: 1,
+      type: "residential",
+      ownerId: null,
+      position: { x: 2, y: 2 },
     },
   ];
 
@@ -94,14 +153,17 @@ export const buyProperty = (gameState: GameState, propertyId: string): GameState
   );
 
   if (allPropertiesOwnedAndMaxed) {
-    const newProperty = generateNewProperty(newProperties.length + 1);
-    newProperties.push(newProperty);
+    const currentTier = Math.floor(newProperties.length / 3) + 1;
+    for (let i = 0; i < 3; i++) {
+      const newProperty = generateNewProperty(newProperties.length + 1 + i, currentTier);
+      newProperties.push(newProperty);
+    }
     
     const expansionEvent: GameEvent = {
       id: uuidv4(),
-      title: "Nova Propriedade Disponível",
-      description: `Uma nova propriedade apareceu no mercado: ${newProperty.name}!`,
-      effect: "Nova Oportunidade",
+      title: "Novas Propriedades Disponíveis",
+      description: "Três novas propriedades apareceram no mercado!",
+      effect: "Novas Oportunidades",
       day: gameState.day,
     };
     newEvents = [expansionEvent, ...newEvents].slice(0, 10);
@@ -145,14 +207,17 @@ export const upgradeProperty = (gameState: GameState, propertyId: string): GameS
   );
 
   if (allPropertiesOwnedAndMaxed) {
-    const newProperty = generateNewProperty(newProperties.length + 1);
-    newProperties.push(newProperty);
+    const currentTier = Math.floor(newProperties.length / 3) + 1;
+    for (let i = 0; i < 3; i++) {
+      const newProperty = generateNewProperty(newProperties.length + 1 + i, currentTier);
+      newProperties.push(newProperty);
+    }
     
     const expansionEvent: GameEvent = {
       id: uuidv4(),
-      title: "Nova Propriedade Disponível",
-      description: `Uma nova propriedade apareceu no mercado: ${newProperty.name}!`,
-      effect: "Nova Oportunidade",
+      title: "Novas Propriedades Disponíveis",
+      description: "Três novas propriedades apareceram no mercado!",
+      effect: "Novas Oportunidades",
       day: gameState.day,
     };
     newEvents = [expansionEvent, ...newEvents].slice(0, 10);
@@ -166,7 +231,7 @@ export const upgradeProperty = (gameState: GameState, propertyId: string): GameS
   };
 };
 
-const generateNewProperty = (tier: number): Property => {
+const generateNewProperty = (id: number, tier: number): Property => {
   const residentialNames = [
     "Apartamento Centro", "Casa Suburbana", "Mansão Luxuosa", "Penthouse Elite", 
     "Villa Exclusiva", "Castelo Moderno", "Arranha-céu Residencial", "Complexo Premium",
@@ -187,14 +252,14 @@ const generateNewProperty = (tier: number): Property => {
   const baseRent = basePrice * 0.1;
 
   return {
-    id: uuidv4(),
+    id: id.toString(),
     name: names[nameIndex],
     price: basePrice,
     rent: baseRent,
     level: 1,
     type: isResidential ? "residential" : "commercial",
     ownerId: null,
-    position: { x: tier, y: 0 },
+    position: { x: (id - 1) % 3, y: Math.floor((id - 1) / 3) },
   };
 };
 
@@ -234,17 +299,20 @@ export const rest = (gameState: GameState): GameState => {
     happiness: Math.min(100, gameState.character.happiness + 10),
   };
 
+  const newDay = gameState.day + 1;
+
   const restEvent: GameEvent = {
     id: uuidv4(),
-    title: "Descansou",
-    description: "Você dedicou um tempo para descansar e recuperar energia.",
-    effect: "+40 Energia, +10 Felicidade",
-    day: gameState.day,
+    title: "Descansou e Novo Dia",
+    description: `Você descansou bem e um novo dia chegou! É o dia ${newDay} em Simeon City.`,
+    effect: "+40 Energia, +10 Felicidade, Dia Avançado",
+    day: newDay,
   };
 
   return {
     ...gameState,
     character: newCharacter,
+    day: newDay,
     events: [restEvent, ...gameState.events].slice(0, 10),
   };
 };
@@ -254,7 +322,7 @@ export const work = (gameState: GameState): GameState => {
     return gameState;
   }
 
-  const baseEarnings = 500;
+  const baseEarnings = 5000;
   const skillBonus = gameState.character.skills.business * 10;
   const totalEarnings = baseEarnings + skillBonus;
 

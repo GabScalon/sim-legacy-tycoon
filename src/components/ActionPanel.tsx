@@ -4,7 +4,6 @@ import React from "react";
 interface ActionPanelProps {
   onCollectRent: () => void;
   onRest: () => void;
-  onAdvanceDay: () => void;
   onWork: () => void;
   energy: number;
   ownedPropertiesCount: number;
@@ -14,13 +13,12 @@ interface ActionPanelProps {
 const ActionPanel = ({
   onCollectRent,
   onRest,
-  onAdvanceDay,
   onWork,
   energy,
   ownedPropertiesCount,
   businessSkill,
 }: ActionPanelProps) => {
-  const workEarnings = 500 + (businessSkill * 10);
+  const workEarnings = 5000 + (businessSkill * 10);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
@@ -82,20 +80,10 @@ const ActionPanel = ({
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
           </svg>
-          Descansar
+          Descansar e Finalizar Dia
           <span className="ml-2 text-xs bg-white bg-opacity-20 px-2 py-1 rounded-full">
             +40 Energia
           </span>
-        </button>
-        
-        <button
-          onClick={onAdvanceDay}
-          className="px-4 py-3 rounded bg-yellow-500 text-white font-medium hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-500 flex items-center justify-center"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Finalizar Dia
         </button>
       </div>
     </div>

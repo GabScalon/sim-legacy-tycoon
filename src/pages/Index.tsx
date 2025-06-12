@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Character from "@/components/Character";
@@ -147,8 +146,8 @@ const Index = () => {
     setGameState(updatedGameState);
     
     toast({
-      title: "Descansou",
-      description: "Você descansou e recuperou energia.",
+      title: "Descansou e Novo Dia",
+      description: `Você descansou e avançou para o dia ${updatedGameState.day}.`,
     });
   };
 
@@ -164,7 +163,7 @@ const Index = () => {
       return;
     }
     
-    const baseEarnings = 500;
+    const baseEarnings = 5000;
     const skillBonus = gameState.character.skills.business * 10;
     const totalEarnings = baseEarnings + skillBonus;
     
@@ -234,7 +233,6 @@ const Index = () => {
             <ActionPanel 
               onCollectRent={handleCollectRent}
               onRest={handleRest}
-              onAdvanceDay={handleAdvanceDay}
               onWork={handleWork}
               energy={gameState.character.energy}
               ownedPropertiesCount={ownedPropertiesCount}
